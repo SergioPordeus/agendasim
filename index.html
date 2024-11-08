@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento do Simulador de Submarinos MB</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .top-bar {
+            background-color: #0a3161;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .nav-bar {
+            background-color: #0a3161;
+            padding: 10px 0;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img {
+            height: 60px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: rgb(23, 87, 110);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 10px solid #0a3161;
+            padding-bottom: 2px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #83a0bf;
+            border-radius: 6px;
+        }
+        .form-section-title {
+            color: #0a3161;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #0a3161;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-column {
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #0a3161;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button {
+            background-color: #0a3161;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+        }
+        .required {
+            color: red;
+            margin-left: 3px;
+        }
+        .ship-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .ship-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .ship-quantity {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .ship-quantity input {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .quantity-btn {
+            background-color: #0a3161;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .ship-card.selected {
+            border-color: #0a3161;
+            background-color: #e6f2ff;
+        }
+        .ship-card h4 {
+            margin-top: 0;
+            color: #0a3161;
+        }
+        .ship-icon {
+            font-size: 3em;
+            color: #0a3161;
+            margin-bottom: 10px;
+        }
+        .ship-image-select {
+            margin-top: 10px;
+            width: 100%;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .weather-conditions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        footer {
+            background-color: #0a3161;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://www.marinha.mil.br/ciama/sites/files/logomarca_MB_0.png" alt="Logo MB" class="logo">
+            <h1>MARINHA DO BRASIL</h1>
+            <h2>Departamento de Treinadores e Simuladores - Itaguaí</h2>
+            
+        </div>
+
+        <form id="agendamentoForm">
+            <!-- Seção de Agendamento -->
+            <div class="form-section">
+                <h4 class="form-section-title">Informações do Agendamento</h4>
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Tipo de Treinamento:<span class="required">*</span></label>
+                        <select id="tipoTreinamento" required>
+                            <option value="">Selecione o Simulador</option>
+                            <option value="SIMSUP">Simulador Superfície</option>
+                            <option value="SIMTAC">Simulador Tático</option>
+                            <!-- <option value="EMERGENCIA">Procedimentos de Emergência</option>
+                            <option value="MANOBRA">Manobras Táticas</option>
+                            <option value="QUALIFICACAO">Qualificação de Operadores</option>
+                            <option value="ATAQUE">Procedimentos de Ataque</option>
+                            <option value="EVASAO">Procedimentos de Evasão</option> -->
+                        </select>
+                    </div>
+                    <div class="form-column">
+                        <label>Organização Militar:<span class="required">*</span></label>
+                        <select id="om" required>
+                            <option value="">Selecione a OM</option>
+                            <option value="CIAMA - Niteroí">CIAMA - NITEROÍ</option>
+                            <option value="CIAMA - Itaguaí">CIAMA - ITAGUAÍ</option>
+                            <option value="SB Riachuelo">Submarino Riachuelo</option>
+                            <option value="SB Humaitá">Submarino Humaitá</option>
+                            <option value="SB Tonelero">Submarino Tonelero</option>
+                            <option value="SB Alte Karan">Submarino Alte Karan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Data do Treinamento:<span class="required">*</span></label>
+                        <input type="date" id="data" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Horário:<span class="required">*</span></label>
+                        <select id="horario" required>
+                            <option value="">Primeiro selecione uma data</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Número de Participantes:<span class="required">*</span></label>
+                        <input type="number" id="participantes" min="1" max="20" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Ramal para Contato:<span class="required">*</span></label>
+                        <input type="tel" id="ramal" required pattern="[0-9]{4}" placeholder="8XXX">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Responsável pelo Agendamento:<span class="required">*</span></label>
+                    <input type="text" id="responsavel" required placeholder="Post/Grad - NIP - Nome Completo">
+                </div>
+            </div>
+
+            <!-- Seção de Configuração do Cenário -->
+            <div class="form-section">
+                <h4 class="form-section-title">Configuração do Cenário</h4>
+                
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Tipo de Cenário:<span class="required">*</span></label>
+                        <select id="tipoCenario" required>
+                            <option value="">Selecione o tipo de cenário</option>
+                            <option value="COSTEIRO">Operações Costeiras</option>
+                            <option value="OCEANICO">Operações Oceânicas</option>
+                            <option value="PORTO">Operações Portuárias</option>
+                            <option value="ESTREITO">Operações em Estreitos</option>
+                        </select>
+                    </div>
+                    <div class="form-column">
+                        <label>Nível de Dificuldade:<span class="required">*</span></label>
+                        <select id="dificuldade" required>
+                            <option value="">Selecione o nível</option>
+                            <option value="FACIL">Fácil</option>
+                            <option value="MEDIO">Médio</option>
+                            <option value="DIFICIL">Difícil</option>
+                            <option value="EXTREMO">Extremo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>Condições Ambientais</h5>
+                    <div class="weather-conditions">
+                        <div class="form-group">
+                            <label>Estado do Mar:</label>
+                            <select id="estadoMar">
+                                <option value="CALMO">Calmo (0-3)</option>
+                                <option value="MODERADO">Moderado (4-5)</option>
+                                <option value="AGITADO">Agitado (6-7)</option>
+                                <option value="TEMPESTUOSO">Tempestuoso (8+)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visibilidade:</label>
+                            <select id="visibilidade">
+                                <option value="OTIMA">Ótima (>10nm)</option>
+                                <option value="BOA">Boa (5-10nm)</option>
+                                <option value="MODERADA">Moderada (2-5nm)</option>
+                                <option value="RESTRITA">Restrita (<2nm)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Período do Dia:</label>
+                            <select id="periodo">
+                                <option value="DIA">Dia</option>
+                                <option value="NOITE">Noite</option>
+                                <option value="ALVORADA">Alvorada</option>
+                                <option value="CREPUSCULO">Crepúsculo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Correntes Marinhas:</label>
+                            <select id="correntes">
+                                <option value="FRACA">Fraca</option>
+                                <option value="MODERADA">Moderada</option>
+                                <option value="FORTE">Forte</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>Seleção de Navios-Alvo</h5>
+                    <div class="ship-selection" id="naviosDisponiveis">
+                        <!-- Os navios serão adicionados dinamicamente via JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observações do Cenário:</label>
+                    <textarea id="observacoesCenario" rows="4" placeholder="Informações adicionais sobre o cenário..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-group" style="text-align: center;">
+                <!-- <button type="button" class="button button-save" onclick="salvarAgendamento()">Salvar Agendamento</button> -->
+                <button type="button" class="button button-download" onclick="baixarFormulario()">Gerar PDF</button>
+            </div>
+
+            <div class="form-column">
+                <label>Data do Treinamento:<span class="required">*</span></label>
+                <input type="date" id="data" required>
+                <span id="dataFormatada"></span>
+            </div>
+
+            
+
+        </form>
+    </div>
+
+    <script>
+
+        function formatarData(data) {
+            const dia = data.getDate().toString().padStart(2, '0');
+            const mes = (data.getMonth() + 1).toString().padStart(2, '0'); // Mês começa do zero
+            const ano = data.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function formatarDataParaExibicao(dataString) {
+            if (!dataString) return '';
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Catálogo de navios disponíveis
+            const catalogoNavios = {
+                COSTEIRO: [
+                    { id: 'NPNG', nome: 'Navio Patrulha', tipo: 'Patrulha' },
+                    { id: 'CORV', nome: 'Corveta', tipo: 'Escolta' },
+                    { id: 'FRAG', nome: 'Fragata', tipo: 'Escolta' },
+                    { id: 'MERC', nome: 'Navio Mercante', tipo: 'Mercante' }
+                ],
+                OCEANICO: [
+                    { id: 'DEST', nome: 'Contratorpedeiro', tipo: 'Escolta' },
+                    { id: 'FRAG', nome: 'Fragata', tipo: 'Escolta' },
+                    { id: 'TANQ', nome: 'Navio Tanque', tipo: 'Mercante' },
+                    { id: 'CONT', nome: 'Porta-Contêiner', tipo: 'Mercante' }
+                ],
+                PORTO: [
+                    { id: 'REBO', nome: 'Rebocador', tipo: 'Apoio' },
+                    { id: 'BALS', nome: 'Balsa', tipo: 'Transporte' },
+                    { id: 'MERCP', nome: 'Navio Mercante Pequeno', tipo: 'Mercante' }
+                ],
+                ESTREITO: [
+                    { id: 'CORV', nome: 'Corveta', tipo: 'Escolta' },
+                    { id: 'PATM', nome: 'Patrulha Médio', tipo: 'Patrulha' },
+                    { id: 'MERCP', nome: 'Navio Mercante Pequeno', tipo: 'Mercante' }
+                ]
+            };
+    
+            // Configuração inicial da data
+            const dataInput = document.getElementById('data');
+            if (dataInput) {
+                // Define a data mínima como hoje
+                const hoje = new Date();
+                const dataMinima = hoje.toISOString().split('T')[0];
+                dataInput.min = dataMinima;
+                
+                // Adiciona listener para formatar a data quando ela for selecionada
+                dataInput.addEventListener('change', function() {
+                    const dataFormatada = formatarDataParaExibicao(this.value);
+                    this.nextElementSibling.textContent = dataFormatada;
+                });
+
+                // Adiciona listener para atualizar horários quando a data mudar
+                dataInput.addEventListener('change', atualizarHorarios);
+            }
+    
+            // Função para atualizar horários
+            function atualizarHorarios() {
+                const horarioSelect = document.getElementById('horario');
+                const dataSelect = document.getElementById('data');
+                
+                horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                
+                if (dataSelect.value) {
+                    const periodoManha = [
+                        { hora: '08:00', label: '08:00 - Primeiro Tempo' },
+                        { hora: '09:00', label: '09:00 - Segundo Tempo' },
+                        { hora: '10:00', label: '10:00 - Terceiro Tempo' },
+                        { hora: '11:00', label: '11:00 - Quarto Tempo' }
+                    ];
+                    
+                    const periodoTarde = [
+                        { hora: '13:00', label: '13:00 - Primeiro Tempo' },
+                        { hora: '14:00', label: '14:00 - Segundo Tempo' },
+                        { hora: '15:00', label: '15:00 - Terceiro Tempo' },
+                        { hora: '16:00', label: '16:00 - Quarto Tempo' }
+                    ];
+                    
+                    // Adiciona separador para período da manhã
+                    const optgroupManha = document.createElement('optgroup');
+                    optgroupManha.label = 'Manhã';
+                    periodoManha.forEach(horario => {
+                        const option = document.createElement('option');
+                        option.value = horario.hora;
+                        option.textContent = horario.label;
+                        optgroupManha.appendChild(option);
+                    });
+                    horarioSelect.appendChild(optgroupManha);
+                    
+                    // Adiciona separador para período da tarde
+                    const optgroupTarde = document.createElement('optgroup');
+                    optgroupTarde.label = 'Tarde';
+                    periodoTarde.forEach(horario => {
+                        const option = document.createElement('option');
+                        option.value = horario.hora;
+                        option.textContent = horario.label;
+                        optgroupTarde.appendChild(option);
+                    });
+                    horarioSelect.appendChild(optgroupTarde);
+                    
+                    // Desabilita horários passados se for o dia atual
+                    const dataSelecionada = new Date(dataSelect.value);
+                    const agora = new Date();
+                    if (dataSelecionada.toDateString() === agora.toDateString()) {
+                        const horaAtual = agora.getHours();
+                        Array.from(horarioSelect.options).forEach(option => {
+                            if (option.value) {
+                                const horaOpcao = parseInt(option.value.split(':')[0]);
+                                option.disabled = horaOpcao <= horaAtual;
+                            }
+                        });
+                    }
+                }
+            }
+    
+            // Função para atualizar opções de cenário
+            function atualizarOpcoesCenario() {
+                const tipoTreinamento = document.getElementById('tipoTreinamento').value;
+                const tipoCenario = document.getElementById('tipoCenario');
+                
+                tipoCenario.innerHTML = '<option value="">Selecione o tipo de cenário</option>';
+                
+                let cenarios = [];
+                switch(tipoTreinamento) {
+                    case 'SIMSUP':
+                        cenarios = ['PORTO', 'COSTEIRO'];
+                        break;
+                    case 'SIMTAC':
+                        cenarios = ['COSTEIRO', 'OCEANICO', 'ESTREITO'];
+                        break;
+                }
+    
+                cenarios.forEach(cenario => {
+                    const option = document.createElement('option');
+                    option.value = cenario;
+                    option.textContent = cenario.charAt(0) + cenario.slice(1).toLowerCase().replace('_', ' ');
+                    tipoCenario.appendChild(option);
+                });
+            }
+    
+            // Função para atualizar navios disponíveis
+            function atualizarOpcoesNavios() {
+                const tipoCenario = document.getElementById('tipoCenario').value;
+                const naviosContainer = document.getElementById('naviosDisponiveis');
+                
+                naviosContainer.innerHTML = '';
+                
+                if (tipoCenario && catalogoNavios[tipoCenario]) {
+                    catalogoNavios[tipoCenario].forEach(navio => {
+                        const navioCard = document.createElement('div');
+                        navioCard.className = 'ship-card';
+                        navioCard.dataset.id = navio.id;
+                        
+                        let icone;
+                        switch(navio.tipo) {
+                            case 'Patrulha':
+                                icone = 'fa-ship';
+                                break;
+                            case 'Escolta':
+                                icone = 'fa-anchor';
+                                break;
+                            case 'Mercante':
+                                icone = 'fa-box-open';
+                                break;
+                            case 'Apoio':
+                                icone = 'fa-life-ring';
+                                break;
+                            case 'Transporte':
+                                icone = 'fa-truck-loading';
+                                break;
+                            default:
+                                icone = 'fa-ship';
+                        }
+                        
+                        navioCard.innerHTML = `
+                            <i class="fas ${icone} ship-icon"></i>
+                            <h4>${navio.nome}</h4>
+                            <p>Tipo: ${navio.tipo}</p>
+                            <select class="ship-image-select">
+                                <option value="padrao">Ícone Padrão</option>
+                                <option value="alternativo1">Alternativo 1</option>
+                                <option value="alternativo2">Alternativo 2</option>
+                            </select>
+                            <div class="ship-quantity">
+                                <button type="button" class="quantity-btn minus">-</button>
+                                <input type="number" value="0" min="0" max="10" class="quantity-input">
+                                <button type="button" class="quantity-btn plus">+</button>
+                            </div>
+                        `;
+                        
+                        const imageSelect = navioCard.querySelector('.ship-image-select');
+                        const shipIcon = navioCard.querySelector('.ship-icon');
+                        const quantityInput = navioCard.querySelector('.quantity-input');
+                        const minusBtn = navioCard.querySelector('.minus');
+                        const plusBtn = navioCard.querySelector('.plus');
+                        
+                        imageSelect.addEventListener('change', function() {
+                            switch(this.value) {
+                                case 'alternativo1':
+                                    shipIcon.className = `fas fa-anchor ship-icon`;
+                                    break;
+                                case 'alternativo2':
+                                    shipIcon.className = `fas fa-life-ring ship-icon`;
+                                    break;
+                                default:
+                                    shipIcon.className = `fas ${icone} ship-icon`;
+                            }
+                        });
+                        
+                        minusBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            if (quantityInput.value > 0) {
+                                quantityInput.value = parseInt(quantityInput.value) - 1;
+                            }
+                            updateCardSelection();
+                        });
+                        
+                        plusBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            if (quantityInput.value < 10) {
+                                quantityInput.value = parseInt(quantityInput.value) + 1;
+                            }
+                            updateCardSelection();
+                        });
+                        
+                        quantityInput.addEventListener('change', updateCardSelection);
+                        
+                        function updateCardSelection() {
+                            if (parseInt(quantityInput.value) > 0) {
+                                navioCard.classList.add('selected');
+                            } else {
+                                navioCard.classList.remove('selected');
+                            }
+                        }
+                        
+                        naviosContainer.appendChild(navioCard);
+                    });
+                }
+            }
+    
+            // Função para salvar o agendamento
+            window.salvarAgendamento = function() {
+                const formData = {
+                    tipoTreinamento: document.getElementById('tipoTreinamento').value,
+                    om: document.getElementById('om').value,
+                    data: document.getElementById('data').value,
+                    horario: document.getElementById('horario').value,
+                    participantes: document.getElementById('participantes').value,
+                    ramal: document.getElementById('ramal').value,
+                    responsavel: document.getElementById('responsavel').value,
+                    tipoCenario: document.getElementById('tipoCenario').value,
+                    dificuldade: document.getElementById('dificuldade').value,
+                    estadoMar: document.getElementById('estadoMar').value,
+                    visibilidade: document.getElementById('visibilidade').value,
+                    periodo: document.getElementById('periodo').value,
+                    correntes: document.getElementById('correntes').value,
+                    observacoes: document.getElementById('observacoesCenario').value,
+                    naviosSelecionados: Array.from(document.querySelectorAll('.ship-card.selected'))
+                    .map(card => ({
+                        id: card.dataset.id,
+                        nome: card.querySelector('h4').textContent,
+                        icone: card.querySelector('.ship-icon').className,
+                        quantidade: card.querySelector('.quantity-input').value
+                    }))
+                };
+    
+                if (!formData.tipoTreinamento || !formData.om || !formData.data || !formData.horario || 
+                    !formData.participantes || !formData.ramal || !formData.responsavel || 
+                    !formData.tipoCenario || !formData.dificuldade) {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return;
+                }
+    
+                console.log('Dados do agendamento:', formData);
+                alert('Agendamento salvo com sucesso!');
+            };
+    
+            // Função para gerar e baixar o PDF
+            window.baixarFormulario = function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Adiciona o título
+                doc.setFontSize(18);
+                doc.text('Agendamento do Simulador de Submarinos', 20, 20);
+                
+                // Coleta os dados do formulário
+                const tipoTreinamento = document.getElementById('tipoTreinamento').value;
+                const om = document.getElementById('om').value;
+                const data = document.getElementById('data').value;
+                const horario = document.getElementById('horario').value;
+                const participantes = document.getElementById('participantes').value;
+                const ramal = document.getElementById('ramal').value;
+                const responsavel = document.getElementById('responsavel').value;
+                const tipoCenario = document.getElementById('tipoCenario').value;
+                const dificuldade = document.getElementById('dificuldade').value;
+                
+                // Adiciona os dados ao PDF
+                doc.setFontSize(12);
+                let y = 40;
+                doc.text(`Tipo de Treinamento: ${tipoTreinamento}`, 20, y); y += 10;
+                doc.text(`Organização Militar: ${om}`, 20, y); y += 10;
+                doc.text(`Data: ${data}`, 20, y); y += 10;
+                doc.text(`Horário: ${horario}`, 20, y); y += 10;
+                doc.text(`Número de Participantes: ${participantes}`, 20, y); y += 10;
+                doc.text(`Ramal para Contato: ${ramal}`, 20, y); y += 10;
+                doc.text(`Responsável: ${responsavel}`, 20, y); y += 10;
+                doc.text(`Tipo de Cenário: ${tipoCenario}`, 20, y); y += 10;
+                doc.text(`Nível de Dificuldade: ${dificuldade}`, 20, y); y += 10;
+                
+                // Adiciona as condições ambientais
+                doc.text('Condições Ambientais:', 20, y); y += 10;
+                doc.text(`Estado do Mar: ${document.getElementById('estadoMar').value}`, 30, y); y += 10;
+                doc.text(`Visibilidade: ${document.getElementById('visibilidade').value}`, 30, y); y += 10;
+                doc.text(`Período do Dia: ${document.getElementById('periodo').value}`, 30, y); y += 10;
+                doc.text(`Correntes Marinhas: ${document.getElementById('correntes').value}`, 30, y); y += 10;
+                
+                // Adiciona os navios selecionados
+                const naviosSelecionados = Array.from(document.querySelectorAll('.ship-card.selected'))
+                    .map(card => {
+                        const nome = card.querySelector('h4').textContent;
+                        const icone = card.querySelector('.ship-icon').className;
+                        const quantidade = card.querySelector('.quantity-input').value;
+                        return `${nome} (${icone}) - Quantidade: ${quantidade}`;
+                    });
+                doc.text('Navios Selecionados:', 20, y); y += 10;
+                naviosSelecionados.forEach(navio => {
+                    doc.text(`- ${navio}`, 30, y);
+                    y += 10;
+                });
+                
+                // Adiciona as observações
+                const observacoes = document.getElementById('observacoesCenario').value;
+                doc.text('Observações:', 20, y); y += 10;
+                doc.text(observacoes, 20, y, { maxWidth: 170 });
+                
+                // Adiciona local e data
+                y += 30; // Espaço extra antes da assinatura
+                const dataAtual = formatarData(new Date());
+                doc.text(`Itaguaí, ${dataAtual}`, 20, y);
+
+                y += 20; // Espaço para assinatura
+                doc.line(20, y, 90, y); // Linha para assinatura
+                y += 5;
+                doc.text('Assinatura do Responsável', 20, y);
+
+                // Salva o PDF
+                doc.save('Agendamento_Simulador_Submarinos.pdf');
+            };
+    
+            // Adiciona event listeners
+            document.getElementById('tipoTreinamento').addEventListener('change', atualizarOpcoesCenario);
+            document.getElementById('tipoCenario').addEventListener('change', atualizarOpcoesNavios);
+    
+            // Inicializa as funções
+            atualizarHorarios();
+            atualizarOpcoesCenario();
+            atualizarOpcoesNavios();
+        });
+        </script>
+</body>
+</html>
