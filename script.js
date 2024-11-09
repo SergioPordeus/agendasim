@@ -26,7 +26,7 @@ function loadImage(url) {
 // Catálogo de navios
 const catalogoNavios = {
     COSTEIRO: [
-        { id: 'NPNG', nome: 'Navio Patrulha', tipo: 'Patrulha', imagem: 'images/navio1.png' },
+        { id: 'NPNG', nome: 'Navio Patrulha', tipo: 'Patrulha', imagem: 'images/navio_patrulha.png' },
         { id: 'CORV', nome: 'Corveta', tipo: 'Escolta', imagem: 'images/corveta.png' },
         { id: 'FRAG', nome: 'Fragata', tipo: 'Escolta', imagem: 'images/fragata.png' },
         { id: 'MERC', nome: 'Navio Mercante', tipo: 'Mercante', imagem: 'images/navio2.png' }
