@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento do Simulador de Submarinos MB</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Todo o conteúdo HTML do seu formulário aqui -->
+        <div class="header">
+            <img src="https://www.marinha.mil.br/ciama/sites/files/logomarca_MB_0.png" alt="Logo MB" class="logo">
+            <h1>MARINHA DO BRASIL</h1>
+            <h2>Departamento de Treinadores e Simuladores - Itaguaí</h2>
+        </div>
+
+        <form id="agendamentoForm">
+            <!-- Seção de Agendamento -->
+            <div class="form-section">
+                <h4 class="form-section-title">Informações do Agendamento</h4>
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Tipo de Treinamento:<span class="required">*</span></label>
+                        <select id="tipoTreinamento" required>
+                            <option value="">Selecione o Simulador</option>
+                            <option value="SIMSUP">Simulador Superfície</option>
+                            <option value="SIMTAC">Simulador Tático</option>
+                            <!-- <option value="EMERGENCIA">Procedimentos de Emergência</option>
+                            <option value="MANOBRA">Manobras Táticas</option>
+                            <option value="QUALIFICACAO">Qualificação de Operadores</option>
+                            <option value="ATAQUE">Procedimentos de Ataque</option>
+                            <option value="EVASAO">Procedimentos de Evasão</option> -->
+                        </select>
+                    </div>
+                    <div class="form-column">
+                        <label>Organização Militar:<span class="required">*</span></label>
+                        <select id="om" required>
+                            <option value="">Selecione a OM</option>
+                            <option value="CIAMA - Niteroí">CIAMA - NITEROÍ</option>
+                            <option value="CIAMA - Itaguaí">CIAMA - ITAGUAÍ</option>
+                            <option value="SB Riachuelo">Submarino Riachuelo</option>
+                            <option value="SB Humaitá">Submarino Humaitá</option>
+                            <option value="SB Tonelero">Submarino Tonelero</option>
+                            <option value="SB Alte Karan">Submarino Alte Karan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Data do Treinamento:<span class="required">*</span></label>
+                        <input type="date" id="data" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Horário:<span class="required">*</span></label>
+                        <select id="horario" required>
+                            <option value="">Primeiro selecione uma data</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Número de Participantes:<span class="required">*</span></label>
+                        <input type="number" id="participantes" min="1" max="20" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Ramal para Contato:<span class="required">*</span></label>
+                        <input type="tel" id="ramal" required pattern="[0-9]{4}" placeholder="8XXX">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Responsável pelo Agendamento:<span class="required">*</span></label>
+                    <input type="text" id="responsavel" required placeholder="Post/Grad - NIP - Nome Completo">
+                </div>
+            </div>
+
+            <!-- Seção de Configuração do Cenário -->
+            <div class="form-section">
+                <h4 class="form-section-title">Configuração do Cenário</h4>
+                
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Tipo de Cenário:<span class="required">*</span></label>
+                        <select id="tipoCenario" required>
+                            <option value="">Selecione o tipo de cenário</option>
+                            <option value="COSTEIRO">Operações Costeiras</option>
+                            <option value="OCEANICO">Operações Oceânicas</option>
+                            <option value="PORTO">Operações Portuárias</option>
+                            <option value="ESTREITO">Operações em Estreitos</option>
+                        </select>
+                    </div>
+                    <div class="form-column">
+                        <label>Nível de Dificuldade:<span class="required">*</span></label>
+                        <select id="dificuldade" required>
+                            <option value="">Selecione o nível</option>
+                            <option value="FACIL">Fácil</option>
+                            <option value="MEDIO">Médio</option>
+                            <option value="DIFICIL">Difícil</option>
+                            <option value="EXTREMO">Extremo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>Condições Ambientais</h5>
+                    <div class="weather-conditions">
+                        <div class="form-group">
+                            <label>Estado do Mar:</label>
+                            <select id="estadoMar">
+                                <option value="CALMO">Calmo (0-3)</option>
+                                <option value="MODERADO">Moderado (4-5)</option>
+                                <option value="AGITADO">Agitado (6-7)</option>
+                                <option value="TEMPESTUOSO">Tempestuoso (8+)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visibilidade:</label>
+                            <select id="visibilidade">
+                                <option value="OTIMA">Ótima (>10nm)</option>
+                                <option value="BOA">Boa (5-10nm)</option>
+                                <option value="MODERADA">Moderada (2-5nm)</option>
+                                <option value="RESTRITA">Restrita (<2nm)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Período do Dia:</label>
+                            <select id="periodo">
+                                <option value="DIA">Dia</option>
+                                <option value="NOITE">Noite</option>
+                                <option value="ALVORADA">Alvorada</option>
+                                <option value="CREPUSCULO">Crepúsculo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Correntes Marinhas:</label>
+                            <select id="correntes">
+                                <option value="FRACA">Fraca</option>
+                                <option value="MODERADA">Moderada</option>
+                                <option value="FORTE">Forte</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>Seleção de Navios-Alvo</h5>
+                    <div class="ship-selection" id="naviosDisponiveis">
+                        <!-- Os navios serão adicionados dinamicamente via JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observações do Cenário:</label>
+                    <textarea id="observacoesCenario" rows="4" placeholder="Informações adicionais sobre o cenário..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-group" style="text-align: center;">
+                <!-- <button type="button" class="button button-save" onclick="salvarAgendamento()">Salvar Agendamento</button> -->
+                <button type="button" class="button button-download" onclick="baixarFormulario()">Gerar PDF</button>
+            </div>
+
+           
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
