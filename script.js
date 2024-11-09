@@ -170,16 +170,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
+        function addWrappedText(text, x, y, maxWidth, lineHeight) {
+            const lines = doc.splitTextToSize(text, maxWidth);
+            for (let i = 0; i < lines.length; i++) {
+                if (y > 280) {  // Se estiver próximo ao fim da página
+                    doc.addPage();  // Adiciona nova página
+                    y = 20;  // Reset da posição Y
+                }
+                doc.text(lines[i], x, y);
+                y += lineHeight;
+            }
+            return y;
+        }
+
         doc.setFontSize(18);
-        doc.text('Agendamento do Simulador de Submarinos', 20, 20);
-        
+        let y = 20;
+        y = addWrappedText('Agendamento do Simulador de Submarinos', 20, y, 170, 10);
+        y += 10;
+
         doc.setFontSize(12);
-        let y = 40;
 
         const campos = [
             { label: 'Tipo de Treinamento', id: 'tipoTreinamento' },
-            { label: 'OM Solicitante', id: 'om' },
-            { label: 'Data do Treinamento', id: 'data' },
+            { label: 'Organização Militar', id: 'om' },
+            { label: 'Data', id: 'data' },
             { label: 'Horário', id: 'horario' },
             { label: 'Número de Participantes', id: 'participantes' },
             { label: 'Ramal para Contato', id: 'ramal' },
@@ -194,12 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         campos.forEach(campo => {
             const valor = document.getElementById(campo.id).value;
-            doc.text(`${campo.label}: ${valor}`, 20, y);
-            y += 10;
+            y = addWrappedText(`${campo.label}: ${valor}`, 20, y, 170, 7);
+            y += 3;
         });
-        
-        doc.text('Navios Selecionados:', 20, y);
-        y += 10;
+
+        y = addWrappedText('Navios Selecionados:', 20, y, 170, 7);
+        y += 5;
 
         const naviosSelecionados = Array.from(document.querySelectorAll('.ship-card.selected'));
         for (const card of naviosSelecionados) {
@@ -207,13 +221,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const quantidade = card.querySelector('.quantity-input').value;
             const imagemSrc = card.querySelector('.ship-image').src;
 
-            doc.text(`- ${nome} - Quantidade: ${quantidade}`, 30, y);
-            y += 10;
+            y = addWrappedText(`- ${nome} - Quantidade: ${quantidade}`, 30, y, 160, 7);
 
             try {
                 const img = await loadImage(imagemSrc);
                 const imgWidth = 30;
                 const imgHeight = (img.height * imgWidth) / img.width;
+                
+                if (y + imgHeight > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
                 doc.addImage(img, 'PNG', 30, y, imgWidth, imgHeight);
                 y += imgHeight + 10;
             } catch (error) {
@@ -221,21 +240,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 y += 10;
             }
         }
-        
+
         const observacoes = document.getElementById('observacoesCenario').value;
-        doc.text('Observações:', 20, y);
-        y += 10;
-        doc.text(observacoes, 20, y, { maxWidth: 170 });
-        
-        y += 30;
+        y = addWrappedText('Observações:', 20, y, 170, 7);
+        y += 5;
+        y = addWrappedText(observacoes, 20, y, 170, 7);
+
+        y += 20;
         const dataAtual = formatarData(new Date());
-        doc.text(`Itaguaí, ${dataAtual}`, 20, y);
+        y = addWrappedText(`Itaguaí, ${dataAtual}`, 20, y, 170, 7);
 
         y += 20;
         doc.line(20, y, 90, y);
         y += 5;
-        doc.text('Assinatura do Responsável', 20, y);
-        
+        y = addWrappedText('Assinatura do Responsável', 20, y, 170, 7);
+
         doc.save('Agendamento_Simulador_Submarinos.pdf');
     };
 
