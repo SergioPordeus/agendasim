@@ -106,10 +106,57 @@
             margin-top: 10px;
         }
         .ship-card {
-            border: 1px solid #cccccc;
-            padding: 10px;
-            margin-bottom: 10px;
+            border: 2px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        
+        .ship-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .btn-remover {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ship-content {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .preview-imagem {
             text-align: center;
+            margin-top: 10px;
+        }
+        .preview-imagem img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 4px;
+        }
+        
+        .btn-adicionar-navio {
+            background-color: #0a3161;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         .ship-quantity {
             display: flex;
@@ -139,10 +186,7 @@
             border-color: #0a3161;
             background-color: #e6f2ff;
         }
-        .ship-card h4 {
-            margin-top: 0;
-            color: #0a3161;
-        }
+      
         .ship-icon {
             font-size: 3em;
             color: #0a3161;
@@ -172,3 +216,4 @@
             padding: 20px 0;
             margin-top: 40px;
         }
+        
