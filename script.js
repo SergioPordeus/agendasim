@@ -39,42 +39,51 @@ const tiposNavios = {
     }
 };
 
-// Função para criar um novo card de navio-alvo
+// Modifique a função criarNovoNavioAlvo
 function criarNovoNavioAlvo() {
+    console.log("Criando novo alvo");
     const container = document.getElementById('naviosDisponiveis');
-    const navioId = Date.now(); // ID único para o novo navio
-    
+    if (!container) {
+        console.error("Container 'naviosDisponiveis' não encontrado!");
+        return;
+    }
+
+    const navioId = Date.now();
     const navioCard = document.createElement('div');
     navioCard.className = 'ship-card';
     navioCard.id = `navio-${navioId}`;
     
     navioCard.innerHTML = `
         <div class="ship-header">
-            <h4>Navio Alvo #${container.children.length + 1}</h4>
+            <h4>Alvo #${container.children.length + 1}</h4>
             <button type="button" class="btn-remover" onclick="removerNavioAlvo('${navioId}')">×</button>
         </div>
         <div class="ship-content">
-            <div class="form-group">
-                <label>Tipo de Alvo:</label>
-                <select class="tipo-alvo" onchange="atualizarOpcoesNavio('${navioId}')">
-                    <option value="">Selecione o tipo</option>
-                    ${Object.entries(tiposNavios).map(([key, tipo]) => 
-                        `<option value="${key}">${tipo.nome}</option>`
-                    ).join('')}
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tipo de Alvo:</label>
+                    <select class="tipo-alvo" onchange="atualizarOpcoesNavio('${navioId}')">
+                        <option value="">Selecione o tipo</option>
+                        ${Object.entries(tiposNavios).map(([key, tipo]) => 
+                            `<option value="${key}">${tipo.nome}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Selecione o Alvo:</label>
+                    <select class="opcao-navio" onchange="atualizarPreviewImagem('${navioId}')" disabled>
+                        <option value="">Primeiro selecione o tipo</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Selecione o Alvo:</label>
-                <select class="opcao-navio" onchange="atualizarPreviewImagem('${navioId}')" disabled>
-                    <option value="">Primeiro selecione o tipo</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Quantidade:</label>
-                <input type="number" class="quantidade-navio" min="1" value="1">
-            </div>
+
             <div class="preview-imagem">
-                <img src="images/ships/default-ship.png" alt="Preview do navio">
+                <img src="images/ships/default-ship.png" alt="Preview do alvo">
+            </div>
+    
+             <!-- Container para os campos específicos -->
+            <div class="campos-especificos">
+                <!-- Será preenchido dinamicamente baseado no tipo selecionado -->
             </div>
         </div>
     `;
@@ -82,7 +91,55 @@ function criarNovoNavioAlvo() {
     container.appendChild(navioCard);
 }
 
-// Função para atualizar as opções de navio baseado no tipo selecionado
+
+// Função para atualizar campos específicos baseado no tipo
+function atualizarCamposEspecificos(navioId, tipo) {
+    const card = document.getElementById(`navio-${navioId}`);
+    const container = card.querySelector('.campos-especificos');
+    
+    if (tipo === 'aeronave') {
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Marcação (graus):</label>
+                    <input type="number" class="marcacao" min="0" max="359" placeholder="000 - 359">
+                </div>
+                <div class="form-group">
+                    <label>Distância (jardas):</label>
+                    <input type="number" class="distancia" min="0" placeholder="Distância">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Velocidade (nós):</label>
+                    <input type="number" class="velocidade" min="0" placeholder="Velocidade">
+                </div>
+                <div class="form-group">
+                    <label>Altitude (pés):</label>
+                    <input type="number" class="altitude" min="0" placeholder="Altitude">
+                </div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Marcação (graus):</label>
+                    <input type="number" class="marcacao" min="0" max="359" placeholder="000 - 359">
+                </div>
+                <div class="form-group">
+                    <label>Distância (jardas):</label>
+                    <input type="number" class="distancia" min="0" placeholder="Distância">
+                </div>
+                <div class="form-group">
+                    <label>Velocidade (nós):</label>
+                    <input type="number" class="velocidade" min="0" placeholder="Velocidade">
+                </div>
+            </div>
+        `;
+    }
+}
+// Modifique a função atualizarOpcoesNavio para incluir a atualização dos campos específicos
 function atualizarOpcoesNavio(navioId) {
     const card = document.getElementById(`navio-${navioId}`);
     const tipoSelect = card.querySelector('.tipo-alvo');
@@ -99,13 +156,45 @@ function atualizarOpcoesNavio(navioId) {
                 `<option value="${opcao.id}" data-imagem="${opcao.imagem}">${opcao.nome}</option>`
             ).join('')}
         `;
+        
+        // Atualiza os campos específicos baseado no tipo
+        atualizarCamposEspecificos(navioId, tipoSelecionado);
     } else {
         opcaoSelect.disabled = true;
         opcaoSelect.innerHTML = '<option value="">Primeiro selecione o tipo</option>';
         previewImg.src = 'images/ships/default-ship.png';
+        card.querySelector('.campos-especificos').innerHTML = '';
     }
 }
 
+// Atualize a função coletarDadosNavios
+function coletarDadosNavios() {
+    const alvos = [];
+    document.querySelectorAll('.ship-card').forEach(card => {
+        const tipo = card.querySelector('.tipo-alvo').value;
+        const opcao = card.querySelector('.opcao-navio').value;
+        
+        if (tipo && opcao) {
+            const tipoNome = tiposNavios[tipo].nome;
+            const opcaoNome = tiposNavios[tipo].opcoes.find(op => op.id === opcao)?.nome;
+            
+            const dadosComuns = {
+                tipo: tipoNome,
+                nome: opcaoNome,
+                marcacao: card.querySelector('.marcacao').value,
+                distancia: card.querySelector('.distancia').value,
+                velocidade: card.querySelector('.velocidade').value
+            };
+
+            if (tipo === 'aeronave') {
+                dadosComuns.altitude = card.querySelector('.altitude').value;
+            }
+            
+            alvos.push(dadosComuns);
+        }
+    });
+    return alvos;
+}
 // Função para remover um navio-alvo
 function removerNavioAlvo(navioId) {
     const card = document.getElementById(`navio-${navioId}`);
@@ -125,3 +214,19 @@ function atualizarPreviewImagem(navioId) {
         previewImg.src = 'images/ships/default-ship.png';
     }
 }
+// Atualize a parte do PDF para incluir os dados específicos
+function baixarFormulario() {
+    // ... código anterior ...
+    
+    const alvosSelecionados = coletarDadosNavios();
+    doc.text('Alvos Selecionados:', 20, y); y += 10;
+    
+    alvosSelecionados.forEach(alvo => {
+        doc.text(`- ${alvo.nome} (${alvo.tipo})`, 30, y); y += 7;
+        doc.text(`  Marcação: ${alvo.marcacao}°, Distância: ${alvo.distancia} jardas, Velocidade: ${alvo.velocidade} nós`, 35, y);
+        if (alvo.altitude) {
+            y += 7;
+            doc.text(`  Altitude: ${alvo.altitude} pés`, 35, y);
+        }
+        y += 10;
+    });
