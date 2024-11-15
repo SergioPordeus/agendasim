@@ -4,6 +4,7 @@ const tiposNavios = {
         nome: 'Navio de Guerra',
         opcoes: [
             { id: 'fragata-niteroi', nome: 'Fragata Classe Niterói', imagem: 'images/ships/fragata-niteroi.png' },
+            { id: 'fragata-Greenhalgh', nome: 'Fragata Classe Greenhalgh', imagem: 'images/ships/fragata-Greenhalgh.png' },
             { id: 'corveta-barroso', nome: 'Corveta Classe Barroso', imagem: 'images/ships/corveta-barroso.png' },
             { id: 'npaoc-amazonas', nome: 'NPaOc Amazonas', imagem: 'images/ships/npaoc-amazonas.png' }
         ]
@@ -20,7 +21,8 @@ const tiposNavios = {
         nome: 'Aeronave',
         opcoes: [
             { id: 'p3-orion', nome: 'P-3 Orion', imagem: 'images/ships/p3-orion.png' },
-            { id: 'c130', nome: 'C-130 Hércules', imagem: 'images/ships/c130.png' }
+            { id: 'c130', nome: 'C-130 Hércules', imagem: 'images/ships/c130.png' },
+            { id: 'lynx', nome: 'Super Lynx', imagem: 'images/ships/super-lynx.png'}
         ]
     },
     'pesqueiro': {
@@ -230,3 +232,7 @@ function baixarFormulario() {
         }
         y += 10;
     });
+}
+
+
+  
