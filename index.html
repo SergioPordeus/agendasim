@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
 </head>
 <body>
     <div class="container">
@@ -105,7 +110,14 @@
                         </select>
                     </div>
                 </div>
-
+                <div class="form-group">
+                    <label for="latitude">Latitude:</label>
+                    <input type="number" id="latitude" step="0.000001" required>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude:</label>
+                    <input type="number" id="longitude" step="0.000001" required>
+                </div>
                 <div class="form-section">
                     <h5>Condições Ambientais</h5>
                     <div class="weather-conditions">
@@ -149,15 +161,16 @@
 
                 <div class="form-section">
                     <h4 class="form-section-title">Seleção de Alvos</h4>
+                    <div class="ship-selection" id="naviosDisponiveis">
+                        <!-- Os alvos serão adicionados aqui dinamicamente -->
+                    </div>
                     <div class="navios-controle">
                         <button type="button" class="btn-adicionar-navio" onclick="criarNovoNavioAlvo()">
                             + Adicionar Novo Alvo
                         </button>
                     </div>
-                    <div class="ship-selection" id="naviosDisponiveis">
-                        <!-- Os alvos serão adicionados aqui dinamicamente -->
-                    </div>
                 </div>
+                
 
                 <div class="form-group">
                     <label>Observações do Cenário:</label>

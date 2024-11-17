@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapa de Navios - Seleção por Clique</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .form-container {
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #coordenadas {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .ship-icon {
+            color: #0a3161;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .distance-label {
+            background: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        #adicionarNavio {
+            padding: 10px 15px;
+            background-color: #0a3161;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #adicionarNavio:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-group">
+            <label for="nomeNavio">Nome do Navio:</label>
+            <input type="text" id="nomeNavio" required>
+        </div>
+        <div class="form-group">
+            <label for="tipoNavio">Tipo do Navio:</label>
+            <input type="text" id="tipoNavio" required>
+        </div>
+        <div id="coordenadas">Clique no mapa para selecionar a localização</div>
+        <button id="adicionarNavio" onclick="adicionarNavio()" disabled>Adicionar Navio</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        let map;
+        let markers = [];
+        let lines = [];
+        let selectedLocation = null;
+
+        // Inicializar o mapa
+        document.addEventListener('DOMContentLoaded', () => {
+            map = L.map('map').setView([-22.9068, -43.1729], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Adicionar evento de clique no mapa
+            map.on('click', onMapClick);
+        });
+
+        function onMapClick(e) {
+            selectedLocation = e.latlng;
+            document.getElementById('coordenadas').innerHTML = `Localização selecionada: ${formatCoordinates(selectedLocation.lat, selectedLocation.lng)}`;
+            document.getElementById('adicionarNavio').disabled = false;
+        }
+
+        function formatCoordinates(lat, lng) {
+            const latGMS = decimalToGMS(lat);
+            const lngGMS = decimalToGMS(lng);
+            return `${latGMS.graus}°${latGMS.minutos}'${latGMS.segundos}"${latGMS.direcao}, ${lngGMS.graus}°${lngGMS.minutos}'${lngGMS.segundos}"${lngGMS.direcao}`;
+        }
+
+        function decimalToGMS(decimal) {
+            const absolute = Math.abs(decimal);
+            const graus = Math.floor(absolute);
+            const minutos = Math.floor((absolute - graus) * 60);
+            const segundos = ((absolute - graus - minutos / 60) * 3600).toFixed(2);
+            const direcao = decimal >= 0 ? (decimal === lat ? 'N' : 'E') : (decimal === lat ? 'S' : 'W');
+            return { graus, minutos, segundos, direcao };
+        }
+
+        function adicionarNavio() {
+            if (!selectedLocation) {
+                alert('Por favor, selecione uma localização no mapa.');
+                return;
+            }
+
+            const nome = document.getElementById('nomeNavio').value;
+            const tipo = document.getElementById('tipoNavio').value;
+
+            if (!nome || !tipo) {
+                alert('Por favor, preencha o nome e o tipo do navio.');
+                return;
+            }
+
+            const shipIcon = L.divIcon({
+                className: 'ship-icon',
+                html: '<i class="fas fa-ship"></i>',
+                iconSize: [30, 30]
+            });
+
+            const marker = L.marker(selectedLocation, {
+                icon: shipIcon,
+                title: nome
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <strong>${nome}</strong><br>
+                Tipo: ${tipo}<br>
+                Localização: ${formatCoordinates(selectedLocation.lat, selectedLocation.lng)}
+            `);
+
+            markers.push({
+                marker: marker,
+                data: { nome, tipo, lat: selectedLocation.lat, lng: selectedLocation.lng }
+            });
+
+            atualizarLinhas();
+
+            // Limpar formulário e seleção
+            document.getElementById('nomeNavio').value = '';
+            document.getElementById('tipoNavio').value = '';
+            document.getElementById('coordenadas').innerHTML = 'Clique no mapa para selecionar a localização';
+            document.getElementById('adicionarNavio').disabled = true;
+            selectedLocation = null;
+        }
+
+        function atualizarLinhas() {
+            lines.forEach(line => map.removeLayer(line));
+            lines = [];
+
+            for (let i = 0; i < markers.length; i++) {
+                for (let j = i + 1; j < markers.length; j++) {
+                    const ship1 = markers[i];
+                    const ship2 = markers[j];
+
+                    const line = L.polyline([
+                        [ship1.data.lat, ship1.data.lng],
+                        [ship2.data.lat, ship2.data.lng]
+                    ], {
+                        color: 'red',
+                        weight: 2,
+                        opacity: 0.7
+                    }).addTo(map);
+
+                    const distance = calcularDistancia(
+                        ship1.data.lat, ship1.data.lng,
+                        ship2.data.lat, ship2.data.lng
+                    );
+
+                    const midpoint = [
+                        (ship1.data.lat + ship2.data.lat) / 2,
+                        (ship1.data.lng + ship2.data.lng) / 2
+                    ];
+
+                    L.marker(midpoint, {
+                        icon: L.divIcon({
+                            className: 'distance-label',
+                            html: `${distance} km`
+                        })
+                    }).addTo(map);
+
+                    lines.push(line);
+                }
+            }
+        }
+
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2);
+        }
+
+        function toRad(degrees) {
+            return degrees * Math.PI / 180;
+        }
+    </script>
+</body>
+</html>

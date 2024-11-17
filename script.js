@@ -234,5 +234,225 @@ function baixarFormulario() {
     });
 }
 
+// Função para inicializar o mapa
+function initializeMap() {
+    // Criar o mapa centrado em uma posição inicial
+    const map = L.map('map').setView([-23.0000, -43.0000], 10); // Rio de Janeiro como exemplo
+
+    // Adicionar camada do OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    return map;
+}
+
+// Função para adicionar navio ao mapa
+function addShipToMap(map, ship) {
+    const { latitude, longitude, nome, tipo } = ship;
+    
+    // Criar ícone personalizado para o navio
+    const shipIcon = L.divIcon({
+        className: 'ship-icon',
+        html: `<i class="fas fa-ship"></i>`,
+        iconSize: [30, 30]
+    });
+
+    // Adicionar marcador do navio
+    const marker = L.marker([latitude, longitude], {
+        icon: shipIcon,
+        title: nome
+    }).addTo(map);
+
+    // Adicionar popup com informações do navio
+    marker.bindPopup(`
+        <strong>${nome}</strong><br>
+        Tipo: ${tipo}<br>
+        Lat: ${latitude}<br>
+        Long: ${longitude}
+    `);
+
+    return marker;
+}
+
+// Função para calcular distância entre dois pontos
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Raio da Terra em km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+             Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+             Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    return distance.toFixed(2); // Retorna distância em km com 2 casas decimais
+}
+
+// Função auxiliar para converter graus em radianos
+function toRad(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+// Função para desenhar linha entre navios
+function drawLineBetweenShips(map, ship1, ship2) {
+    const coordinates = [
+        [ship1.latitude, ship1.longitude],
+        [ship2.latitude, ship2.longitude]
+    ];
+
+    const distance = calculateDistance(
+        ship1.latitude, ship1.longitude,
+        ship2.latitude, ship2.longitude
+    );
+
+    // Desenhar linha
+    const line = L.polyline(coordinates, {
+        color: 'red',
+        weight: 2,
+        opacity: 0.7
+    }).addTo(map);
+
+    // Adicionar label com a distância no meio da linha
+    const midpoint = [
+        (ship1.latitude + ship2.latitude) / 2,
+        (ship1.longitude + ship2.longitude) / 2
+    ];
+
+    L.marker(midpoint, {
+        icon: L.divIcon({
+            className: 'distance-label',
+            html: `${distance} km`
+        })
+    }).addTo(map);
+
+    return line;
+}
+
+// Função principal para gerenciar os navios no mapa
+class ShipMapManager {
+    constructor() {
+        this.map = initializeMap();
+        this.ships = new Map(); // Armazenar navios e seus marcadores
+        this.lines = []; // Armazenar linhas entre navios
+    }
+
+    // Adicionar novo navio
+    addShip(shipData) {
+        const marker = addShipToMap(this.map, shipData);
+        this.ships.set(shipData.id, {
+            data: shipData,
+            marker: marker
+        });
+        this.updateConnections();
+    }
+
+    // Remover navio
+    removeShip(shipId) {
+        const ship = this.ships.get(shipId);
+        if (ship) {
+            ship.marker.remove();
+            this.ships.delete(shipId);
+            this.updateConnections();
+        }
+    }
+
+    // Atualizar conexões entre navios
+    updateConnections() {
+        // Limpar linhas existentes
+        this.lines.forEach(line => line.remove());
+        this.lines = [];
+
+        // Desenhar novas linhas entre todos os navios
+        const shipsArray = Array.from(this.ships.values());
+        for (let i = 0; i < shipsArray.length; i++) {
+            for (let j = i + 1; j < shipsArray.length; j++) {
+                const line = drawLineBetweenShips(
+                    this.map,
+                    shipsArray[i].data,
+                    shipsArray[j].data
+                );
+                this.lines.push(line);
+            }
+        }
+    }
+
+    // Centralizar mapa em um navio
+    centerOnShip(shipId) {
+        const ship = this.ships.get(shipId);
+        if (ship) {
+            this.map.setView([ship.data.latitude, ship.data.longitude], 12);
+        }
+    }
+
+    // Obter informações de distância entre navios
+    getDistanceMatrix() {
+        const matrix = [];
+        const ships = Array.from(this.ships.values());
+
+        for (const ship1 of ships) {
+            const distances = [];
+            for (const ship2 of ships) {
+                if (ship1 === ship2) {
+                    distances.push(0);
+                } else {
+                    const distance = calculateDistance(
+                        ship1.data.latitude, ship1.data.longitude,
+                        ship2.data.latitude, ship2.data.longitude
+                    );
+                    distances.push(parseFloat(distance));
+                }
+            }
+            matrix.push(distances);
+        }
+
+        return matrix;
+    }
+}
+// Exemplo de uso:
+document.addEventListener('DOMContentLoaded', () => {
+    // Adicionar estilos
+    const style = document.createElement('style');
+    style.textContent = mapStyles;
+    document.head.appendChild(style);
+
+    // Criar elemento do mapa
+    const mapDiv = document.createElement('div');
+    mapDiv.id = 'map';
+    document.querySelector('.container').appendChild(mapDiv);
+
+    // Inicializar gerenciador de mapa
+    const shipManager = new ShipMapManager();
+
+    // Exemplo de adição de navio
+    const exampleShip = {
+        id: 1,
+        nome: 'Navio 1',
+        tipo: 'Cargueiro',
+        latitude: -23.0000,
+        longitude: -43.0000
+    };
+
+    shipManager.addShip(exampleShip);
+});
+
+// No seu código existente de adicionar navio
+function adicionarNavio() {
+    const navio = {
+        id: Date.now(), // ID único
+        nome: document.getElementById('nomeNavio').value,
+        tipo: document.getElementById('tipoNavio').value,
+        latitude: parseFloat(document.getElementById('latitude').value),
+        longitude: parseFloat(document.getElementById('longitude').value)
+    };
+
+    // Adicionar ao mapa
+    shipManager.addShip(navio);
+    
+    // Seu código existente para adicionar o navio à interface
+}
+
 
   
